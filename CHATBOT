@@ -11,7 +11,7 @@ def reply_to_user(msg):
     elif "how are you" in msg:
         return "All circuits running smooth! 💻"
     elif "your name" in msg:
-        return "Name’s NeoBot. Cool, right? 🤖"
+        return "Name’s MyBot. Cool, right? 🤖"
     elif "time" in msg:
         now = datetime.datetime.now()
         return f"⏰ It's {now.strftime('%I:%M %p')} already!"
@@ -30,12 +30,12 @@ def reply_to_user(msg):
 # --- Interface & Fun Stuff ---
 def launch_gui():
     root = tk.Tk()
-    root.title("🤖 Talk to NeoBot")
+    root.title("🤖 Talk to MyBot")
     root.geometry("550x600")
     root.config(bg="#1e1e2f")
 
     # Header bit
-    heading = tk.Label(root, text="🗨️ Talk to NeoBot", bg="#4e4efc", fg="white",
+    heading = tk.Label(root, text="🗨️ Talk to MyBot", bg="#4e4efc", fg="white",
                        font=("Arial", 20, "bold"), pady=10)
     heading.pack(fill=tk.X)
 
