@@ -3,73 +3,75 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk
 
-class FaceDetectionApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("🔍 Face Detection App")
-        self.root.geometry("700x600")
-        self.root.configure(bg="#1e1e2f")
+class FaceFinderApp:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Face Detector 😎")
+        self.master.geometry("700x600")
+        self.master.configure(bg="#1e1e2f")
 
-        # Title
-        self.title_label = tk.Label(root, text="Face Detection", 
-                                    font=("Segoe UI", 18, "bold"), bg="#1e1e2f", fg="#4e4efc")
-        self.title_label.pack(pady=20)
+        # GUI Title
+        self.title = tk.Label(master, text="Face Detection App",
+                              font=("Segoe UI", 18, "bold"), bg="#1e1e2f", fg="#4e4efc")
+        self.title.pack(pady=20)
 
-        # Canvas for image display
-        self.canvas = tk.Label(root, bg="#f2f2f2", borderwidth=2, relief="ridge")
-        self.canvas.pack(pady=10)
+        # Where image shows up
+        self.img_label = tk.Label(master, bg="#f2f2f2", relief="ridge", borderwidth=2)
+        self.img_label.pack(pady=10)
 
-        # Buttons
-        self.select_btn = tk.Button(root, text="Select Image 📁", font=("Segoe UI", 12, "bold"),
-                                    command=self.load_image, bg="#4e4efc", fg="white", width=20)
-        self.select_btn.pack(pady=10)
+        # Select Image button
+        self.pick_btn = tk.Button(master, text="📁 Choose Image", font=("Segoe UI", 12, "bold"),
+                                  bg="#4e4efc", fg="white", width=20, command=self.choose_image)
+        self.pick_btn.pack(pady=10)
 
-        self.detect_btn = tk.Button(root, text="Detect Faces 😎", font=("Segoe UI", 12, "bold"),
-                                    command=self.detect_faces, bg="#00c896", fg="white", width=20, state="disabled")
-        self.detect_btn.pack(pady=5)
+        # Detect Faces button (initially disabled)
+        self.run_btn = tk.Button(master, text="😎 Run Detection", font=("Segoe UI", 12, "bold"),
+                                 bg="#00c896", fg="white", width=20, state="disabled", command=self.detect_faces)
+        self.run_btn.pack(pady=5)
 
-        # Load Haar cascade model
-        self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
-        self.cv_img = None  # OpenCV image
+        # Pre-trained face detection model
+        haar_path = cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
+        self.detector = cv2.CascadeClassifier(haar_path)
+        self.orig_img = None
 
-    def load_image(self):
-        file_path = filedialog.askopenfilename(title="Select Image", 
-                                               filetypes=[("Image Files", "*.jpg *.png *.jpeg")])
-        if file_path:
-            self.cv_img = cv2.imread(file_path)
-            self.show_image(self.cv_img)
-            self.detect_btn.config(state="normal")
+    def choose_image(self):
+        filetypes = [("Image files", "*.png *.jpg *.jpeg")]
+        img_path = filedialog.askopenfilename(title="Select a Photo", filetypes=filetypes)
+        if img_path:
+            self.orig_img = cv2.imread(img_path)
+            self._display_img(self.orig_img)
+            self.run_btn.config(state="normal")
 
-    def show_image(self, img):
-        # Resize for display
-        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        img_rgb = cv2.resize(img_rgb, (500, 400))
-        img_pil = Image.fromarray(img_rgb)
-        img_tk = ImageTk.PhotoImage(img_pil)
-        self.canvas.configure(image=img_tk)
-        self.canvas.image = img_tk
+    def _display_img(self, img):
+        rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        resized = cv2.resize(rgb, (500, 400))
+        pil_img = Image.fromarray(resized)
+        self.tk_img = ImageTk.PhotoImage(pil_img)
+        self.img_label.configure(image=self.tk_img)
+        self.img_label.image = self.tk_img
 
     def detect_faces(self):
-        if self.cv_img is None:
-            messagebox.showwarning("No image", "Please select an image first.")
+        if self.orig_img is None:
+            messagebox.showwarning("Oops!", "No image loaded yet.")
             return
 
-        gray = cv2.cvtColor(self.cv_img, cv2.COLOR_BGR2GRAY)
-        faces = self.face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+        # Convert to grayscale for face detection
+        gray = cv2.cvtColor(self.orig_img, cv2.COLOR_BGR2GRAY)
+        found = self.detector.detectMultiScale(gray, 1.1, 5, minSize=(30, 30))
 
-        for (x, y, w, h) in faces:
-            cv2.rectangle(self.cv_img, (x, y), (x+w, y+h), (0, 255, 0), 2)
+        # Draw green rectangles on faces
+        for (x, y, w, h) in found:
+            cv2.rectangle(self.orig_img, (x, y), (x+w, y+h), (0, 255, 0), 2)
 
-        if len(faces) == 0:
-            messagebox.showinfo("Result", "No faces found.")
+        if not found.any():
+            messagebox.showinfo("Result", "Zero faces found, maybe try another picture?")
         else:
-            messagebox.showinfo("Result", f"{len(faces)} face(s) detected!")
+            messagebox.showinfo("Result", f"{len(found)} face(s) detected!")
 
-        self.show_image(self.cv_img)
+        self._display_img(self.orig_img)
 
-# Run the GUI
-if __name__ == "__main__":
+# Launch it!
+if __name__ == '__main__':
     root = tk.Tk()
-    app = FaceDetectionApp(root)
+    app = FaceFinderApp(root)
     root.mainloop()
-
