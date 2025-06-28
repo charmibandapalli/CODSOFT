@@ -1,0 +1,81 @@
+import tkinter as tk
+from tkinter import scrolledtext
+import datetime
+
+# --- Bot Brain (kinda basic, but it works) ---
+def reply_to_user(msg):
+    msg = msg.strip().lower()
+
+    if "hello" in msg or "hi" in msg:
+        return "Heyy! 😊 What can I do for ya?"
+    elif "how are you" in msg:
+        return "All circuits running smooth! 💻"
+    elif "your name" in msg:
+        return "Name’s NeoBot. Cool, right? 🤖"
+    elif "time" in msg:
+        now = datetime.datetime.now()
+        return f"⏰ It's {now.strftime('%I:%M %p')} already!"
+    elif "date" in msg:
+        today = datetime.date.today()
+        return f"📅 It’s {today.strftime('%B %d, %Y')} today."
+    elif "bye" in msg:
+        return "See ya soon! 👋"
+    elif "joke" in msg:
+        return "Why don’t coders like nature? Too many bugs 🐞"
+    elif "help" in msg:
+        return "Hmm, try typing stuff like 'time', 'joke', or just say hi!"
+    else:
+        return "Errr... didn’t catch that. Wanna try again? 🧐"
+
+# --- Interface & Fun Stuff ---
+def launch_gui():
+    root = tk.Tk()
+    root.title("🤖 Talk to NeoBot")
+    root.geometry("550x600")
+    root.config(bg="#1e1e2f")
+
+    # Header bit
+    heading = tk.Label(root, text="🗨️ Talk to NeoBot", bg="#4e4efc", fg="white",
+                       font=("Arial", 20, "bold"), pady=10)
+    heading.pack(fill=tk.X)
+
+    # Chat output area
+    log_box = scrolledtext.ScrolledText(root, wrap=tk.WORD, font=("Arial", 12),
+                                        bg="#f2f2f7", fg="#000", state=tk.DISABLED)
+    log_box.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+
+    # Input section
+    btm_frame = tk.Frame(root, bg="#1e1e2f")
+    btm_frame.pack(fill=tk.X, pady=10)
+
+    entry_box = tk.Entry(btm_frame, font=("Arial", 12), width=40)
+    entry_box.pack(side=tk.LEFT, padx=10)
+
+    def fire_message(event=None):
+        user_msg = entry_box.get().strip()
+        if not user_msg:
+            return
+        log_box.config(state=tk.NORMAL)
+        log_box.insert(tk.END, f"You 👤: {user_msg}\n", "usr")
+        bot_msg = reply_to_user(user_msg)
+        log_box.insert(tk.END, f"NeoBot 🤖: {bot_msg}\n\n", "bot")
+        log_box.config(state=tk.DISABLED)
+        log_box.yview(tk.END)
+        entry_box.delete(0, tk.END)
+
+    # Button to send
+    snd_btn = tk.Button(btm_frame, text="Send", font=("Arial", 11, "bold"),
+                        bg="#4e4efc", fg="white", width=10, command=fire_message)
+    snd_btn.pack(side=tk.LEFT, padx=5)
+
+    # Fire when you hit Enter
+    root.bind('<Return>', fire_message)
+
+    # Text styles for flair
+    log_box.tag_config("usr", foreground="#0077cc", font=("Arial", 12, "bold"))
+    log_box.tag_config("bot", foreground="#333", font=("Arial", 12))
+
+    root.mainloop()
+
+# Let's roll 🎬
+launch_gui()
